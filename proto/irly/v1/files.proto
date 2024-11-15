@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package irly.v1;
+
+service Irly {
+  rpc GetFile (GetFileRequest) returns (GetFileResponse);
+} 
+
+message GetFileRequest {
+  string file_path = 1;
+}
+
+message GetFileResponse {
+  string file_path = 1;
+  string file_content = 2;
+}
