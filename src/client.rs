@@ -1,4 +1,5 @@
 use serde::Serialize;
+use tonic::codec::CompressionEncoding;
 use warp::http::StatusCode;
 use warp::{Filter, Rejection, Reply};
 
@@ -28,9 +29,19 @@ async fn request_file(
 
 async fn web_handler(path: warp::path::FullPath) -> Result<impl warp::Reply, warp::Rejection> {
     let addr = "http://localhost:50051";
-    let mut client = IrlyClient::connect(addr).await.unwrap();
-    let Ok(response) = request_file(&mut client, path.as_str()).await else {
-        return Err(warp::reject::not_found());
+    let mut client = IrlyClient::connect(addr)
+        .await
+        .unwrap()
+        .accept_compressed(CompressionEncoding::Gzip)
+        .max_decoding_message_size(256 * 1024 * 1024)
+        .max_encoding_message_size(256 * 1024 * 1024);
+
+    let response = match request_file(&mut client, path.as_str()).await {
+        Ok(response) => response,
+        Err(e) => {
+            eprintln!("Error: {e:?}");
+            return Err(warp::reject::not_found());
+        }
     };
 
     let res_ref = response.get_ref();

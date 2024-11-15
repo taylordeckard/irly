@@ -12,5 +12,5 @@ message GetFileRequest {
 
 message GetFileResponse {
   string file_path = 1;
-  string file_content = 2;
+  bytes file_content = 2;
 }
